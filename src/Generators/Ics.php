@@ -12,12 +12,14 @@ class Ics implements Generator
 {
     public function generate(Link $link): string
     {
+	    /** @see https://tools.ietf.org/html/rfc5545.html#section-3.6.1 */
         $url = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'BEGIN:VEVENT',
             'UID:'.$this->generateEventUid($link),
-            'SUMMARY:'.$link->title,
+	        'DTSTAMP:'.date('Ymd\THis'),
+            'SUMMARY:'.$this->escapeString($link->title),
         ];
 
         if ($link->allDay) {
@@ -39,9 +41,9 @@ class Ics implements Generator
 
         $url[] = 'END:VEVENT';
         $url[] = 'END:VCALENDAR';
-        $redirectLink = implode('%0d%0a', $url);
+        $redirectLink = implode('\r\n', $url);
 
-        return 'data:text/calendar;charset=utf8,'.$redirectLink;
+	    return 'data:text/calendar;charset=utf8;base64,'.base64_encode($redirectLink);
     }
 
     /** @see https://tools.ietf.org/html/rfc5545.html#section-3.3.11 */
